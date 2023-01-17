@@ -28,7 +28,7 @@
   display: none;
 }
 
-.scroller {
+.c-scroll__bottom {
     z-index: 5;
     cursor: pointer;
     position: absolute;
@@ -70,7 +70,7 @@
     transition: top .08s;
 }
 
-.showScroll02::before {
+.scroll__height::before {
     position: absolute;
     content: '';
     height: 100%;

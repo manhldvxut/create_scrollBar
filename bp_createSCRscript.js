@@ -18,6 +18,7 @@
             contentPosition = 0,
             scrollerBeingDragged = false,
             scrollerBeingDraggedHeight = false,
+            visibleRatio,
             scroller_bottom,
             scroller_right,
             topPositionWidth,
@@ -26,11 +27,25 @@
             scrollerHeight; // height
 
 
+        scrollContentWrapper.className += ' c-scroll__content'
+
+        function calculateScrollerWidthVisible() {
+            visibleRatio = scrollContainer.offsetWidth / scrollContentWrapper.scrollWidth;
+        }
+
+        window.addEventListener('resize', function(event) {
+            calculateScrollerWidthVisible();
+            scrollerWidth = visibleRatio * scrollContainer.offsetWidth;
+            return visibleRatio * scrollContainer.offsetWidth;
+        }, true);
+
+
         function calculateScrollerWidth() {
             // Calculation of how tall scroller should be
-            let visibleRatio = scrollContainer.offsetWidth / scrollContentWrapper.scrollWidth;
+            calculateScrollerWidthVisible()
             return visibleRatio * scrollContainer.offsetWidth;
         }
+
 
         // create Height
         function calculateScrollerHeight() {
@@ -93,37 +108,47 @@
             }
         }
 
+        function createScrollerInner() {
+            if (scrollerWidth / scrollContainer.offsetWidth < 1){
+                    // *If there is a need to have scroll bar based on content size
+                scroller_bottom.style.width = scrollerWidth + 'px';
+
+                
+
+                // attach related draggable listeners
+                scroller_bottom.addEventListener('mousedown', startDrag);
+                window.addEventListener('mouseup', stopDrag);
+                window.addEventListener('mousemove', scrollBarScroll)
+            }
+        }
+
         function createScroller() {
             // *Creates scroller element and appends to '.scrollable' div
             if(configScrollBar.createScrollBarWidth === true) {
                 // create  width
                 scroller_bottom = document.createElement("div");
-                scroller_bottom.className = 'scroller';
+                scroller_bottom.className = 'c-scroll__bottom';
 
                 // determine how big scroller should be based on content
                 scrollerWidth = calculateScrollerWidth();
 
-                if (scrollerWidth / scrollContainer.offsetWidth < 1){
-                    // *If there is a need to have scroll bar based on content size
-                    scroller_bottom.style.width = scrollerWidth + 'px';
+                // append scroller to scrollContainer div
+                scrollContainer.appendChild(scroller_bottom);
 
-                    // append scroller to scrollContainer div
-                    scrollContainer.appendChild(scroller_bottom);
+                createScrollerInner()
 
-                    // show scroll path divot
-                    scrollContainer.className += ' showScroll';
-
-                    // attach related draggable listeners
-                    scroller_bottom.addEventListener('mousedown', startDrag);
-                    window.addEventListener('mouseup', stopDrag);
-                    window.addEventListener('mousemove', scrollBarScroll)
-                }
+                window.addEventListener('resize', function(event) {
+                    scrollerWidth = calculateScrollerWidth();
+                    createScrollerInner();
+                }, true);
+                
+                
             }
 
             if(configScrollBar.createScrollBarHeight === true) {
                 // height
                 scroller_right = document.createElement("div");
-                scroller_right.className = ' scroller02';
+                scroller_right.className = ' c-scroll__right';
 
                 scrollerHeight = calculateScrollerHeight()
 
@@ -135,12 +160,16 @@
                     scrollContainer.appendChild(scroller_right);
 
                     // show scroll path divot
-                    scrollContainer.className += ' showScroll02';
+                    scrollContainer.className += ' c-scroll__body';
 
                     // attach related draggable listeners
                     scroller_right.addEventListener('mousedown', startDragHeight);
                     window.addEventListener('mouseup', stopDragHeight);
                     window.addEventListener('mousemove', scrollBarScrollHeight)
+
+                    scroller_right.addEventListener('resize', startDragHeight);
+                    window.addEventListener('resize', stopDragHeight);
+                    window.addEventListener('resize', scrollBarScrollHeight);
                 }
             }
         }
@@ -153,6 +182,7 @@
             scrollContentWrapper.addEventListener('scroll', moveScrollerHeight); // height
         }
 
+        // windown resize
 
         return { createScroller };
     }
