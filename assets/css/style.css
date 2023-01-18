@@ -91,6 +91,8 @@ scroll bar
 
 .c-scroll__content {
   overflow: scroll;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 .c-scroll__content::-webkit-scrollbar {
