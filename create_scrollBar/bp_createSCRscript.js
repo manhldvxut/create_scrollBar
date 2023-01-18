@@ -4,14 +4,13 @@
         createElement : '.scrollable',
         createScrollBarWidth: true,
         createScrollBarHeight: true,
-        marginScrollBarHeight: 10
     }
 
     var allScrollable = document.querySelectorAll(configScrollBar.createElement);
 
     function init(scrollContainer){
 
-        if(!(scrollContainer instanceof Element)) {
+      if(!(scrollContainer instanceof Element)) {
             return { createScroller : function(){} };
         }
       
@@ -20,13 +19,13 @@
             scrollerBeingDragged = false,
             scrollerBeingDraggedHeight = false,
             visibleRatio,
-            visibleRatioHeight,
             scroller_bottom,
             scroller_right,
             topPositionWidth,
             topPositionHeight,
             scrollerWidth, // width
             scrollerHeight; // height
+
 
         scrollContentWrapper.className += ' c-scroll__content'
 
@@ -37,7 +36,6 @@
         window.addEventListener('resize', function(event) {
             calculateScrollerWidthVisible();
             scrollerWidth = visibleRatio * scrollContainer.offsetWidth;
-
             return visibleRatio * scrollContainer.offsetWidth;
         }, true);
 
@@ -50,21 +48,9 @@
 
 
         // create Height
-
-        function calculateScrollerHeightVisible() {
-            visibleRatioHeight = scrollContainer.offsetHeight / scrollContentWrapper.scrollHeight;
-        }
-
-        window.addEventListener('resize', function(event) {
-            calculateScrollerHeightVisible();
-            scrollerHeight = visibleRatioHeight * scrollContainer.offsetHeight;
-            return visibleRatioHeight * scrollContainer.offsetHeight;
-        }, true);
-
-
         function calculateScrollerHeight() {
             // Calculation of how tall scroller should be
-            calculateScrollerHeightVisible()
+            let visibleRatioHeight = scrollContainer.offsetHeight / scrollContentWrapper.scrollHeight;
             return visibleRatioHeight * scrollContainer.offsetHeight;
         }
 
@@ -82,7 +68,6 @@
             let scrollPercentage = evtH.target.scrollTop / scrollContentWrapper.scrollHeight;
             topPositionHeight = scrollPercentage * (scrollContainer.offsetHeight - 0); // 5px arbitrary offset so scroll bar doesn't move too far beyond content wrapper bounding box
             scroller_right.style.top = topPositionHeight  + 'px';
-            
         }
 
         function startDrag(evt) {
@@ -123,10 +108,12 @@
             }
         }
 
-        function createScrollerInnerWidth() {
+        function createScrollerInner() {
             if (scrollerWidth / scrollContainer.offsetWidth < 1){
                     // *If there is a need to have scroll bar based on content size
                 scroller_bottom.style.width = scrollerWidth + 'px';
+
+                
 
                 // attach related draggable listeners
                 scroller_bottom.addEventListener('mousedown', startDrag);
@@ -135,30 +122,8 @@
             }
         }
 
-        function createScrollerInnerHeight() {
-            if (scrollerHeight / scrollContainer.offsetHeight < 1){
-                // *If there is a need to have scroll bar based on content size
-                scroller_right.style.height = scrollerHeight - (configScrollBar.marginScrollBarHeight*2) + 'px'; // 2 x margin
-
-                // attach related draggable listeners
-                scroller_right.addEventListener('mousedown', startDragHeight);
-                window.addEventListener('mouseup', stopDragHeight);
-                window.addEventListener('mousemove', scrollBarScrollHeight)
-
-                if(configScrollBar.marginScrollBarHeight > 0) { // jquery 3.5
-                    $('.c-scroll__right').css({
-                        'margin' : configScrollBar.marginScrollBarHeight+'px'
-                    })
-                    $('<style>.c-scroll__body::before{margin:'+configScrollBar.marginScrollBarHeight+'px'+'}</style>').appendTo('head');
-                    $('<style>.c-scroll__body::before{height: calc( 100% - '+ (configScrollBar.marginScrollBarHeight*2) +'px' +' )}</style>').appendTo('head');
-                }
-            }
-        }
-
         function createScroller() {
             // *Creates scroller element and appends to '.scrollable' div
-            scrollContainer.className += ' c-scroll__body';
-
             if(configScrollBar.createScrollBarWidth === true) {
                 // create  width
                 scroller_bottom = document.createElement("div");
@@ -170,11 +135,11 @@
                 // append scroller to scrollContainer div
                 scrollContainer.appendChild(scroller_bottom);
 
-                createScrollerInnerWidth()
+                createScrollerInner()
 
                 window.addEventListener('resize', function(event) {
                     scrollerWidth = calculateScrollerWidth();
-                    createScrollerInnerWidth();
+                    createScrollerInner();
                 }, true);
                 
                 
@@ -187,18 +152,25 @@
 
                 scrollerHeight = calculateScrollerHeight()
 
-                // append scroller to scrollContainer div
-                scrollContainer.appendChild(scroller_right);
+                if (scrollerHeight / scrollContainer.offsetHeight < 1){
+                    // *If there is a need to have scroll bar based on content size
+                    scroller_right.style.height = scrollerHeight + 'px';
 
+                    // append scroller to scrollContainer div
+                    scrollContainer.appendChild(scroller_right);
 
-                createScrollerInnerHeight()
+                    // show scroll path divot
+                    scrollContainer.className += ' c-scroll__body';
 
-                window.addEventListener('resize', function(event) {
-                    scrollerHeight = calculateScrollerHeight();
-                    createScrollerInnerHeight();
-                }, true);
+                    // attach related draggable listeners
+                    scroller_right.addEventListener('mousedown', startDragHeight);
+                    window.addEventListener('mouseup', stopDragHeight);
+                    window.addEventListener('mousemove', scrollBarScrollHeight)
 
-                
+                    scroller_right.addEventListener('resize', startDragHeight);
+                    window.addEventListener('resize', stopDragHeight);
+                    window.addEventListener('resize', scrollBarScrollHeight);
+                }
             }
         }
         // *** Listeners ***
@@ -209,6 +181,8 @@
         if(configScrollBar.createScrollBarHeight === true) {
             scrollContentWrapper.addEventListener('scroll', moveScrollerHeight); // height
         }
+
+        // windown resize
 
         return { createScroller };
     }
