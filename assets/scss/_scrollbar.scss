@@ -10,7 +10,12 @@
 
 .content{
     width: calc(800/750*100vw);
-  	height: 150px;
+  	height: 450px;
+  	padding: 20px;
+}
+
+.content-wrapper {
+	border: 1px solid grey;
 }
 
 
